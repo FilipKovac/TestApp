@@ -8,5 +8,6 @@ namespace TestApp.Models
     public interface IClient
     {
         Task<List<IBook>> GetBooks();
+        Task SaveAsync();
     }
 }

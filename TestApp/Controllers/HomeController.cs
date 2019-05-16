@@ -14,7 +14,7 @@ namespace TestApp.Controllers
 
         public HomeController(IClient client) => this.client = client;
 
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
             List<IBook> library = await client.GetBooks();
 
