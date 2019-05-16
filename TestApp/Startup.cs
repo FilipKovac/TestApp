@@ -31,6 +31,13 @@ namespace TestApp
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            string database = "XML";
+            switch (database)
+            {
+                case "XML":
+                    services.AddTransient<Models.IClient>(c => new Models.Xml.LibraryClient("Files/library.xml"));
+                    break;
+            }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

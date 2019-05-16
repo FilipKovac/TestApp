@@ -10,8 +10,14 @@ namespace TestApp.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IClient client;
+
+        public HomeController(IClient client) => this.client = client;
+
+        public async Task<IActionResult> IndexAsync()
         {
+            List<IBook> library = await client.GetBooks();
+
             return View();
         }
 
