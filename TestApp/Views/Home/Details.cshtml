@@ -1,0 +1,20 @@
+﻿@model TestApp.Models.ViewModel.Book
+
+@{
+    ViewData["Title"] = "Detail knihy " + Model.Name;
+}
+<h2>@ViewData["Title"]</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <section>
+            <p>Name: @Model.Name</p>
+            <p>Author: @Model.Author</p>
+            <p>Borrowed: @Model.IsBorrowed()</p>
+            @{ if (Model.IsBorrowed()) { 
+               <p>Person: @Model.Borrowed.FirstName @Model.Borrowed.LastName</p>
+               <P>From: @Model.Borrowed.From</P>
+            } }
+        </section>
+    </div>
+</div>

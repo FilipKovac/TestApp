@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Xml.Serialization;
 
 namespace TestApp.Models.Xml
 {
-    public class Borrowed
+    public class Borrowed : IBorrowed
     {
         [XmlElement("FirstName")]
         public string FirstName;
@@ -14,5 +11,11 @@ namespace TestApp.Models.Xml
         public string LastName;
         [XmlElement("From")]
         public string From;
+
+        public string GetFirstName() => this.FirstName;
+        public string GetLastName() => this.LastName;
+        public string GetFrom() => this.From;
+
+        public bool IsNull() => this.From.Any();
     }
 }

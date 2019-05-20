@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +9,10 @@ namespace TestApp
 {
     public class Startup
     {
+        public const string CookieScheme = "AppUser";
+
         public Startup(IConfiguration configuration)
-        {
+        { 
             Configuration = configuration;
         }
 
@@ -31,11 +28,25 @@ namespace TestApp
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            string database = "XML";
-            switch (database)
+            services.AddAuthentication(CookieScheme)
+                .AddCookie(CookieScheme, options =>
+                {
+                    options.AccessDeniedPath = "/account/denied";
+                    options.LoginPath = "/account/login";
+                });
+
+            // Add access to settings from appsettings to controllers
+            services.AddSingleton<IConfiguration>(Configuration);
+            
+            // Create context according to appsettings config file
+            switch (Configuration.GetValue<string>("AppSettings:UseSource", "default"))
             {
                 case "XML":
-                    services.AddTransient<Models.IClient>(c => new Models.Xml.LibraryClient("Files/library.xml"));
+                    services.AddSingleton<Models.IClient>(c => new Models.Xml.LibraryClient(Configuration.GetValue<string>("AppSettings:Source", "default")));
+                    break;
+                default:
+                    Static.Logger.Fatal("No database source was picked");
+                    System.Environment.Exit(0);
                     break;
             }
 
@@ -58,6 +69,7 @@ namespace TestApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {

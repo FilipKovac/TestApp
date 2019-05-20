@@ -1,0 +1,45 @@
+﻿@model TestApp.Models.ViewModel.Book
+@{
+    ViewData["Title"] = "Editacia";
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<div class="row">
+    <div class="col-md-8">
+        <section>
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Author" class="control-label"></label>
+                    <input asp-for="Author" class="form-control" />
+                    <span asp-validation-for="Author" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Borrowed.FirstName" class="control-label"></label>
+                    <input asp-for="Borrowed.FirstName" class="form-control" />
+                    <span asp-validation-for="Borrowed.FirstName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Borrowed.LastName" class="control-label"></label>
+                    <input asp-for="Borrowed.LastName" class="form-control" />
+                    <span asp-validation-for="Borrowed.LastName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Borrowed.From" class="control-label"></label>
+                    <input asp-for="Borrowed.From" class="form-control" />
+                    <span asp-validation-for="Borrowed.From" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

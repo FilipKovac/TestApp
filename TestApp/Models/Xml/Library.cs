@@ -12,6 +12,6 @@ namespace TestApp.Models.Xml
         [XmlElement("Book")]
         public List<Book> Books;
 
-        public List<IBook> GetBooks() => this.Books?.Cast<IBook>().ToList();
+        public IEnumerable<IBook> GetBooks() => this.Books?.Cast<IBook>();
     }
 }
