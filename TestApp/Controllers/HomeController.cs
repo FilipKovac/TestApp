@@ -29,33 +29,9 @@ namespace TestApp.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            ViewBag.Borrowed = client.GetBooks().Where(b => b.IsBorrowed()).Select(b => CreateBook(b)).ToList();
-            ViewBag.Free = client.GetBooks().Where(b => !b.IsBorrowed()).Select(b => CreateBook(b)).ToList();
-            return View(client.GetBooks().Select(b => CreateBook(b)).ToList());
-        }
-
-        /// <summary>
-        /// Take instance of object that implements IBook interface 
-        /// and create instance of ViewModel.Book
-        /// </summary>
-        /// <param name="b"></param>
-        /// <returns>Book if parameter not empty, otherwise null</returns>
-        private Book CreateBook(IBook b)
-        {
-            if (b == null)
-                return null;
-            return new Book
-            {
-                Id = b.GetId(),
-                Name = b.GetName(),
-                Author = b.GetAuthor(),
-                Borrowed = new Borrowed
-                {
-                    FirstName = b.GetBorrowed().GetFirstName(),
-                    LastName = b.GetBorrowed().GetLastName(),
-                    From = b.GetBorrowed().GetFrom()
-                }
-            };
+            ViewBag.Borrowed = client.GetBooks().Where(b => b.IsBorrowed()).Select(b => new Book(b)).ToList();
+            ViewBag.Free = client.GetBooks().Where(b => !b.IsBorrowed()).Select(b => new Book(b)).ToList();
+            return View(client.GetBooks().Select(b => new Book(b)).ToList());
         }
 
         /// <summary>
@@ -65,12 +41,18 @@ namespace TestApp.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (!id.HasValue)
                 return NotFound();
-            Book book = CreateBook(await client.FindAsync(id.Value));
-            if (book == null)
+            try
+            {
+                Book book = new Book(await client.FindAsync(id.Value));
+                return View(book);
+            }
+            catch (ArgumentNullException ex)
+            {
+                Static.Logger.Fatal("Could not find book to edit", ex);
                 return NotFound();
-            return View(book);
+            }
         }
 
         [HttpPost]
@@ -85,18 +67,11 @@ namespace TestApp.Controllers
 
             if (ModelState.IsValid)
             {
-                Book bookToSave = CreateBook(await client.FindAsync(id));
-                if (bookToSave == null || bookToSave.Id == 0)
-                    return NotFound();
-
-                //bookToSave.Name = book.Name;
-                //bookToSave.Author = book.Author;
-
                 try
                 {
-                    client.Update(bookToSave);
+                    client.Update(book);
                     await client.SaveChangesAsync();
-                    ViewData["Message"] = $"Kniha {bookToSave.Name} bola upravena a ulozena";
+                    ViewData["Message"] = $"Kniha {book.Name} bola upravena a ulozena";
                 }
                 catch (Exception ex)
                 {
@@ -116,25 +91,33 @@ namespace TestApp.Controllers
                 Static.Logger.Info("Call Details on Book with empty id parameter");
                 return NotFound();
             }
-            Book book = CreateBook(await client.FindAsync(id.Value));
-            if (book == null)
+            try
+            {
+                Book book = new Book(await client.FindAsync(id.Value));
+                return View(book);
+            } catch (ArgumentNullException ex)
+            {
+                Static.Logger.Fatal($"Could not get details of book with id {id}", ex);
                 return NotFound();
-            return View(book);
+            }
         }
 
+        // GET Home/Create
         public IActionResult Create() => View();
+
+        // POST Home/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Book book)
         {
             if (ModelState.IsValid)
             {
-                client.Add(book);
-                if (book.Id > 0)
+                if (client.Add(book).GetId() > 0)
                     await client.SaveChangesAsync();
                 else
                 {
-                    Static.Logger.Fatal("Could create book");
+                    ViewData["Message"] = "Knihu sa nepodarilo pridat. Skuste neskor prosim.";
+                    Static.Logger.Fatal("Could not create a book");
                     goto End;
                 }
 
@@ -147,7 +130,6 @@ namespace TestApp.Controllers
         }
 
         [HttpGet]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             try

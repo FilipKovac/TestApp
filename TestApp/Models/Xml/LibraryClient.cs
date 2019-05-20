@@ -33,12 +33,13 @@ namespace TestApp.Models.Xml
         public Task<IBook> FindAsync(int id) => Task.Run(() => {
             IBook book = this.Library.Books.Where(b => b.Id == id).FirstOrDefault();
             if (book == null)
-                Static.Logger.Fatal("Could not find book with id " + id);
+                throw new System.ArgumentNullException("Could not find book with id " + id);
             return book;
         });
+
         public IBook Add(IBook book)
         {
-            Book bookToAdd = (Book)book;
+            Book bookToAdd = new Book(book);
             if (bookToAdd.Id == 0)
                 bookToAdd.Id = this.Library.Books.Max(b => b.Id) + 1;
             this.Library.Books.Add(bookToAdd);
@@ -47,28 +48,28 @@ namespace TestApp.Models.Xml
 
         public IBook Remove(IBook book)
         {
+            if (book == null || book.GetId() == 0)
+                throw new System.ArgumentNullException("Removing empty or null book is forbidden");
             book = this.Library.Books.Where(b => b.Id == book.GetId()).FirstOrDefault();
             if (book == null)
-            {
-                Static.Logger.Debug("Trying to remove item, that is not listed");
-            }
+                throw new System.ArgumentNullException("Book is not listed. Please add it first");
             else
-            {
                 this.Library.Books.Remove((Book)book);
-            }
             return book;
         }
 
         public IBook Update(IBook book)
         {
-            IBook bookToUpdate = this.Library.Books.Where(b => b.Id == book.GetId()).FirstOrDefault();
+            if (book == null || book.GetId() == 0)
+                throw new System.ArgumentNullException("Updating unknown book is forbidden");
+            Book bookToUpdate = this.Library.Books.FirstOrDefault(b => b.Id == book.GetId());
             if (bookToUpdate == null)
-            {
-                Static.Logger.Debug("Trying to update item, that is not listed");
-            }
+                throw new System.ArgumentNullException("Book is not listed. Please add it first");
             else
             {
-                bookToUpdate = book;
+                bookToUpdate.Name = book.GetName();
+                bookToUpdate.Author = book.GetAuthor();
+                bookToUpdate.Borrowed = new Borrowed(book.GetBorrowed());
             }
             return bookToUpdate;
         }
@@ -99,7 +100,6 @@ namespace TestApp.Models.Xml
                 {
                     serializer.Serialize(writer, this.Library);
                     writer.Close();
-                    Static.Logger.Info("Xml Library was successfully saved");
                 }
             } catch (System.InvalidOperationException ex)
             {
@@ -107,6 +107,9 @@ namespace TestApp.Models.Xml
             } catch (System.ArgumentNullException ex)
             {
                 Static.Logger.Fatal("Could not create xml writer to save to library Xml file", ex);
+            } finally
+            {
+                Static.Logger.Info("End of saving library to xml");
             }
         }
     }

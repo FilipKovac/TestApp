@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +20,7 @@ namespace TestApp.Models
         /// </summary>
         /// <param name="id"></param>
         /// <returns>Found object or null if not listed</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         Task<IBook> FindAsync(int id);
         /// <summary>
         /// Add object to the set
@@ -33,12 +33,14 @@ namespace TestApp.Models
         /// </summary>
         /// <param name="book"></param>
         /// <returns>Removed object or null if failed</returns>
+        /// <exception cref="ArgumentNullException">When paramater is null or has empty Id</exception>
         IBook Remove(IBook book);
         /// <summary>
         /// Update object in the set
         /// </summary>
         /// <param name="book"></param>
         /// <returns>Updated object</returns>
+        /// <exception cref="ArgumentNullException">When paramater is null or has empty Id</exception>
         IBook Update(IBook book);
 
         /// <summary>

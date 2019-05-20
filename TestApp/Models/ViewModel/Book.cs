@@ -22,6 +22,22 @@ namespace TestApp.Models.ViewModel
         [DisplayName("Pozicane")]
         public Borrowed Borrowed { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor
+        /// </summary>
+        public Book() { }
+        /// <summary>
+        /// Creates ViewModel from any other model that implements IBook interface
+        /// </summary>
+        /// <param name="book"></param>
+        public Book (IBook book)
+        {
+            this.Id = book.GetId();
+            this.Name = book.GetName();
+            this.Author = book.GetAuthor();
+            this.Borrowed = new Borrowed(book.GetBorrowed());
+        }
+
         public string GetAuthor() => this.Author;
 
         public int GetId() => this.Id;
@@ -30,6 +46,6 @@ namespace TestApp.Models.ViewModel
 
         public IBorrowed GetBorrowed() => this.Borrowed;
 
-        public bool IsBorrowed() => this.Borrowed.IsNull();
+        public bool IsBorrowed() => !this.Borrowed.IsNull();
     }
 }
